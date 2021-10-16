@@ -5,12 +5,14 @@ const partials = require('express-partials');
 const Auth = require('./middleware/auth');
 const models = require('./models');
 const user = require('./models/user.js');
+const cookies = require('./middleware/cookieParser.js');
 
 const app = express();
 
 app.set('views', `${__dirname}/views`);
 app.set('view engine', 'ejs');
 app.use(partials());
+app.use(cookies);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
@@ -91,9 +93,9 @@ app.get('/signup', (req, res) => {
 
 app.post('/signup', (req, res) => {
   user.create(req.body).then((val) => {
-    res.send('<script>alert("Your username has been created!"); window.location.href = "/login"; </script>');
+    res.redirect('/');
   }).catch((err) => {
-    res.send('<script>alert("This username already exists!"); window.location.href = "/signup"; </script>');
+    res.redirect('/signup');
   });
 });
 
@@ -105,12 +107,12 @@ app.post('/login', (req, res) => {
   user.get({username: req.body.username})
     .then((value) => {
       if (user.compare(req.body.password, value.password, value.salt)) {
-        res.send('<script>alert("You logged in!"); window.location.href = "/"; </script>');
+        res.redirect('/');
       } else {
-        console.log('false');
+        res.redirect('/login');
       }
     }).catch((err) => {
-      console.log('err: ', err);
+      res.redirect('/login');
     });
 });
 /************************************************************/
